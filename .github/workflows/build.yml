@@ -164,10 +164,27 @@ jobs:
         with:
           submodules: recursive
       - name: Build RPM in the Sailfish OS SDK
-        uses: coderus/github-sfos-build@sfos5
-        with:
-          release: "5.0.0.43"
-          arch: ${{ matrix.arch }}
+        env:
+          SFOS: "5.0.0.43"
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -o pipefail
+          docker pull -q coderus/sailfishos-platform-sdk:$SFOS
+          chmod -R a+rwX .
+          docker run --rm -v "$PWD:/share" -w /share coderus/sailfishos-platform-sdk:$SFOS bash -c '
+            set -x
+            whoami; sdk-assistant list 2>/dev/null || sb2-config -l
+            T=$(sb2-config -l | grep -- "-'"$ARCH"'$" | head -1)
+            echo "target: $T"
+            mb2 -t "$T" build
+          ' 2>&1 | tee sfos.log
+      - name: Report Sailfish errors as annotations
+        if: failure()
+        run: |
+          grep -n -i -E "error|not found|nothing provides|cannot|fatal|target:|^\+ whoami|SailfishOS-" sfos.log | head -45 | while IFS= read -r line; do
+            echo "::error title=sfos::$(echo "$line" | cut -c1-400)"
+          done
+          tail -15 sfos.log | while IFS= read -r line; do echo "::error title=tail::$(echo "$line" | cut -c1-400)"; done
       - uses: actions/upload-artifact@v4
         with:
           name: sheetstation-sailfish-${{ matrix.arch }}
