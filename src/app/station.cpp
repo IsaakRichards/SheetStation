@@ -102,9 +102,10 @@ void Station::loadSettings() {
                           defaultDir(QStandardPaths::DocumentsLocation, QStringLiteral("SheetStation/Shared"))).toString();
     m_downloadDir = st.value(QStringLiteral("downloadDir"),
                              defaultDir(QStandardPaths::DownloadLocation, QStringLiteral("SheetStation"))).toString();
-    // Empty by default: the only outside service is the Google Sheet. Without STUN,
-    // devices connect over the same LAN or over IPv6; add a STUN server to cross NATs.
-    m_stunServers = st.value(QStringLiteral("stunServers"), QString()).toString();
+    // Google's free public STUN server: lets devices learn their public address so they
+    // can connect across different home networks. No file data ever goes through it.
+    // Clear the field in Settings to stay LAN / IPv6 only.
+    m_stunServers = st.value(QStringLiteral("stunServers"), QStringLiteral("stun.l.google.com:19302")).toString();
     QDir().mkpath(m_shareDir);
     QDir().mkpath(m_downloadDir);
 }
@@ -305,7 +306,7 @@ void Station::housekeeping() {
         }
         ss::LinkState st = l.peer->state();
         if (st == ss::LinkState::Negotiating && l.age.elapsed() > kConnectTimeoutMs) {
-            emit notify(tr("Could not reach %1 directly. Same network? Try adding a STUN server in Settings.")
+            emit notify(tr("Could not reach %1 directly. A strict network (campus Wi-Fi, mobile data) may be blocking the link.")
                             .arg(peerName(it.key())));
             drop << it.key();
         } else if (st == ss::LinkState::Connected && !l.peer->hasActiveTransfers() &&

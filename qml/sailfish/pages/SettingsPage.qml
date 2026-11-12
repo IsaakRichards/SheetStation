@@ -32,7 +32,7 @@ Dialog {
             TextField {
                 id: stunField
                 width: parent.width
-                label: qsTr("STUN servers (optional)")
+                label: qsTr("STUN servers")
                 placeholderText: qsTr("empty = LAN / IPv6 only")
                 text: station.stunServers
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
@@ -43,8 +43,8 @@ Dialog {
                 wrapMode: Text.WordWrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryHighlightColor
-                text: qsTr("Without a STUN server, devices connect directly when they share a network or both have IPv6. "
-                         + "Adding one (e.g. stun.l.google.com:19302) lets most home networks connect.")
+                text: qsTr("The STUN server only tells this device its public address so devices on different networks can connect. "
+                         + "No files go through it. Clear it to connect only on the same network or over IPv6.")
             }
             Label {
                 x: Theme.horizontalPageMargin

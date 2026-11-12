@@ -38,18 +38,13 @@ On every device: open SheetStation → **Settings**, paste the same `/exec` URL,
 - Received files land in the **download folder** (default `Downloads/SheetStation`),
   verified with SHA-256.
 
-### Connectivity, and the one setting that matters
+### Connectivity
 
-By default **no STUN server** is configured, because the only outside service you wanted
-is the Google Sheet. Without STUN, devices connect when they:
-
-- are on the **same network** (home Wi-Fi, campus Wi-Fi), or
-- both have **public IPv6** connectivity.
-
-To connect across different home networks over IPv4, add a STUN server in Settings
-(e.g. `stun.l.google.com:19302`). It only helps each device learn its public address; no
-file data goes through it. Strict networks (some campus/corporate Wi-Fi, mobile carrier
-NAT) may still block direct links; a relay mode is a planned next step.
+By default the app uses Google's free public STUN server (`stun.l.google.com:19302`). It only
+tells each device its own public address so devices on different home networks can connect;
+no file data goes through it. Clear the STUN field in Settings to connect only over the same
+network or IPv6. Strict networks (some campus/corporate Wi-Fi, mobile carrier NAT) may still
+block direct links; a relay mode is a planned next step.
 
 ## Building
 

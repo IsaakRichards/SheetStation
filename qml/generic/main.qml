@@ -245,7 +245,7 @@ ApplicationWindow {
                 TextField { id: shareField; Layout.fillWidth: true; text: station.shareDir; selectByMouse: true }
                 Label { text: qsTr("Download folder"); font.bold: true }
                 TextField { id: dlField; Layout.fillWidth: true; text: station.downloadDir; selectByMouse: true }
-                Label { text: qsTr("STUN servers (optional, comma separated)"); font.bold: true }
+                Label { text: qsTr("STUN servers (comma separated)"); font.bold: true }
                 TextField {
                     id: stunField
                     Layout.fillWidth: true
@@ -258,8 +258,8 @@ ApplicationWindow {
                     wrapMode: Text.WordWrap
                     opacity: 0.7
                     font.pixelSize: 12
-                    text: qsTr("Without a STUN server, devices connect directly when they share a network or both have IPv6. "
-                             + "Adding one (e.g. stun.l.google.com:19302) lets most home networks connect, at the cost of using an outside server.")
+                    text: qsTr("The STUN server only tells this device its public address so devices on different networks can connect. "
+                             + "No files go through it. Clear the field to connect only on the same network or over IPv6.")
                 }
                 Button {
                     text: qsTr("Save")
