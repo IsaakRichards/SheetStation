@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SheetStation
+Comment=Share files directly between devices, with a Google Sheet as the only server
+Exec=sheetstation
+Icon=sheetstation
+Categories=Network;FileTransfer;
+Terminal=false

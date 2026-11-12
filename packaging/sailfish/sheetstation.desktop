@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=sheetstation
+Exec=sheetstation
+Name=SheetStation
+
+[X-Sailjail]
+Permissions=Internet;Documents;Downloads
+OrganizationName=sheetstation
+ApplicationName=sheetstation

@@ -1,0 +1,128 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  QT_VERSION: "6.8.3"
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libssl-dev qt6-base-dev qt6-declarative-dev \
+            qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts \
+            qml6-module-qtquick-window qml6-module-qtqml-workerscript qml6-module-qtquick-templates
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSHEETSTATION_TESTS=ON -DCMAKE_INSTALL_PREFIX=/usr
+      - name: Build
+        run: cmake --build build
+      - name: Core self-test (two peers, real WebRTC)
+        run: ./build/sheetstation_core_test
+      - name: QML smoke test (load UI headless for a few seconds)
+        run: |
+          sudo apt-get install -y xvfb
+          timeout 8s xvfb-run -a ./build/src/app/sheetstation || code=$?
+          # 124 = still running when timeout fired = UI loaded fine
+          test "${code:-0}" = "124"
+      - name: Package
+        run: |
+          DESTDIR=$PWD/pkg cmake --install build
+          tar -C pkg -czf sheetstation-linux-x86_64.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sheetstation-linux-x86_64
+          path: sheetstation-linux-x86_64.tar.gz
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: win64_msvc2022_64
+          cache: true
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: OpenSSL
+        shell: pwsh
+        run: |
+          choco install openssl --no-progress -y
+          $root = @("C:\Program Files\OpenSSL-Win64", "C:\Program Files\OpenSSL") | Where-Object { Test-Path "$_\include\openssl\ssl.h" } | Select-Object -First 1
+          echo "OPENSSL_ROOT_DIR=$root" >> $env:GITHUB_ENV
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSHEETSTATION_TESTS=ON -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%"
+        shell: cmd
+      - name: Build
+        run: cmake --build build
+      - name: Core self-test
+        shell: pwsh
+        run: |
+          $env:PATH = "$env:OPENSSL_ROOT_DIR\bin;$env:PATH"
+          ./build/sheetstation_core_test.exe
+      - name: Deploy
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory dist | Out-Null
+          Copy-Item build/src/app/sheetstation.exe dist/
+          windeployqt --release --qmldir qml/generic dist/sheetstation.exe
+          Copy-Item "$env:OPENSSL_ROOT_DIR\bin\libssl-3-x64.dll", "$env:OPENSSL_ROOT_DIR\bin\libcrypto-3-x64.dll" dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sheetstation-windows-x64
+          path: dist
+
+  android:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: android_openssl
+        run: git clone --depth 1 https://github.com/KDAB/android_openssl third_party/android_openssl
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: android
+          arch: android_arm64_v8a
+          modules: ""
+          autodesktop: true
+          cache: true
+      - name: NDK
+        run: |
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "ndk;26.1.10909125" "build-tools;34.0.0" "platforms;android-34" > /dev/null
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> $GITHUB_ENV
+      - name: Configure
+        run: |
+          sudo apt-get install -y ninja-build
+          "$QT_ROOT_DIR/bin/qt-cmake" -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" -DANDROID_NDK_ROOT="$ANDROID_NDK_ROOT" \
+            -DQT_HOST_PATH="$QT_HOST_PATH" -DQT_ANDROID_BUILD_ALL_ABIS=OFF
+      - name: Build APK
+        run: cmake --build build --target apk
+      - name: Sign APK (throwaway key, for sideloading)
+        run: |
+          APK=$(find build -name "*release-unsigned.apk" | head -1)
+          keytool -genkeypair -keystore ci.jks -storepass sheetstation -keypass sheetstation -alias ss \
+            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=SheetStation"
+          "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" sign --ks ci.jks --ks-pass pass:sheetstation \
+            --out sheetstation-android-arm64.apk "$APK"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sheetstation-android-arm64
+          path: sheetstation-android-arm64.apk

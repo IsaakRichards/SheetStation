@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="qml/sailfish/sheetstation.qml">sheetstation.qml</file>
+        <file alias="qml/sailfish/pages/MainPage.qml">pages/MainPage.qml</file>
+        <file alias="qml/sailfish/pages/PeerPage.qml">pages/PeerPage.qml</file>
+        <file alias="qml/sailfish/pages/TransfersPage.qml">pages/TransfersPage.qml</file>
+        <file alias="qml/sailfish/pages/MyFilesPage.qml">pages/MyFilesPage.qml</file>
+        <file alias="qml/sailfish/pages/SettingsPage.qml">pages/SettingsPage.qml</file>
+        <file alias="qml/sailfish/cover/CoverPage.qml">cover/CoverPage.qml</file>
+    </qresource>
+</RCC>
