@@ -181,10 +181,9 @@ jobs:
       - name: Report Sailfish errors as annotations
         if: failure()
         run: |
-          grep -n -i -E "error|not found|nothing provides|cannot|fatal|target:|^\+ whoami|SailfishOS-" sfos.log | head -45 | while IFS= read -r line; do
-            echo "::error title=sfos::$(echo "$line" | cut -c1-400)"
+          grep -v -E "sb2d|^\+ |Unsupported action" sfos.log | grep -v "^\s*$" | tail -9 | while IFS= read -r line; do
+            echo "::error title=sfos::$(echo "$line" | cut -c1-500)"
           done
-          tail -15 sfos.log | while IFS= read -r line; do echo "::error title=tail::$(echo "$line" | cut -c1-400)"; done
       - uses: actions/upload-artifact@v4
         with:
           name: sheetstation-sailfish-${{ matrix.arch }}
