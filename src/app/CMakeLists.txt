@@ -58,9 +58,11 @@ endif()
 
 # ------------------------------------------------------------------ install
 include(GNUInstallDirs)
-install(TARGETS sheetstation
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    BUNDLE DESTINATION .)
+if(NOT ANDROID) # on Android the app is a shared library packaged by androiddeployqt
+    install(TARGETS sheetstation
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        BUNDLE DESTINATION .)
+endif()
 
 if(UNIX AND NOT ANDROID AND NOT APPLE)
     if(SHEETSTATION_SAILFISH)
