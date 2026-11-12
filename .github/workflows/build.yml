@@ -191,10 +191,22 @@ jobs:
           path: RPMS/*.rpm
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    # Runs for a pushed v* tag, or for a push to main whose commit message contains [release]
+    # (the workflow then creates the v<version> tag itself from CMakeLists.txt).
+    if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]'))
     needs: [linux, windows, android, sailfish]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        id: ver
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            v=$(sed -n 's/^project(SheetStation VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
+            echo "tag=v$v" >> $GITHUB_OUTPUT
+          fi
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -208,6 +220,9 @@ jobs:
           ls -la release
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: SheetStation ${{ steps.ver.outputs.tag }}
+          target_commitish: ${{ github.sha }}
           files: release/*
           generate_release_notes: true
           body: |
