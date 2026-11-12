@@ -5,6 +5,9 @@
  * then Deploy > New deployment > Web app, "Execute as: Me",
  * "Who has access: Anyone". Copy the /exec URL into every SheetStation app.
  *
+ * WARNING: there is no authentication. Anyone with the /exec URL can list your devices
+ * and fetch any shared file. Never use SheetStation for sensitive data.
+ *
  * The sheet only ever holds who is online, what they share, and short-lived
  * WebRTC connection offers/answers. Files never touch Google.
  *

@@ -18,6 +18,15 @@ Dialog {
             id: col
             width: parent.width
             DialogHeader { acceptText: qsTr("Save"); title: qsTr("Settings") }
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
+                wrapMode: Text.WordWrap
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.errorColor
+                text: qsTr("Warning: SheetStation is not secure. Anyone with your sheet URL can see and download "
+                         + "everything in your shared folder. Do not share sensitive or private files.")
+            }
             TextField {
                 id: urlField
                 width: parent.width

@@ -4,6 +4,13 @@
 
 <h1 align="center">SheetStation</h1>
 
+> [!WARNING]
+> **SheetStation is not secure. Do not use it for sensitive or private files.**
+> There are no accounts, passwords or access controls. Anyone who has your Apps Script URL can
+> see your devices and the names of your shared files, and can download anything in a shared
+> folder from a device that is online. Devices do not verify each other's identity. Only share
+> files you would be comfortable making public, such as e-books.
+
 Share files (e-books and the like) **directly between your devices** over WebRTC, with a
 **Google Sheet as the only server**. The sheet is just a notice board: devices post who
 they are, what they share, and a one-time connection offer/answer. The files themselves go

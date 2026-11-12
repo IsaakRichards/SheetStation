@@ -142,7 +142,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.margins: 12
                 wrapMode: Text.WordWrap
-                text: qsTr("Files in your shared folder are listed for other devices:\n%1").arg(station.shareDir)
+                text: qsTr("Files in your shared folder are listed for other devices:\n%1\n\nAnyone with your sheet URL can download them. Don't put sensitive files here.").arg(station.shareDir)
             }
             Button {
                 Layout.leftMargin: 12
@@ -230,6 +230,14 @@ ApplicationWindow {
                 width: parent.width - 24
                 spacing: 6
 
+                Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    color: "#d9534f"
+                    font.bold: true
+                    text: qsTr("Warning: SheetStation is not secure. Anyone with your sheet URL can see and download "
+                             + "everything in your shared folder. Do not share sensitive or private files.")
+                }
                 Label { text: qsTr("Apps Script web app URL"); font.bold: true }
                 TextField {
                     id: urlField

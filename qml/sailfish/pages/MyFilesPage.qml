@@ -7,7 +7,18 @@ Page {
         id: list
         anchors.fill: parent
         model: station.myFiles
-        header: PageHeader { title: qsTr("My shared files"); description: station.shareDir }
+        header: Column {
+            width: list.width
+            PageHeader { title: qsTr("My shared files"); description: station.shareDir }
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
+                wrapMode: Text.WordWrap
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.errorColor
+                text: qsTr("Anyone with your sheet URL can download these. Don't put sensitive files here.")
+            }
+        }
         PullDownMenu {
             MenuItem { text: qsTr("Open shared folder"); onClicked: station.openPath(station.shareDir) }
             MenuItem { text: qsTr("Rescan"); onClicked: station.refresh() }
