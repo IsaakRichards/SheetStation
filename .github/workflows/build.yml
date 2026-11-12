@@ -2,8 +2,13 @@ name: build
 
 on:
   push:
+    branches: ["**"]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 env:
   QT_VERSION: "6.8.3"
@@ -147,3 +152,52 @@ jobs:
         with:
           name: sheetstation-android-arm64
           path: sheetstation-android-arm64.apk
+
+  sailfish:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [aarch64, armv7hl]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build RPM in the Sailfish OS SDK
+        uses: coderus/github-sfos-build@sfos5
+        with:
+          release: "5.0.0.43"
+          arch: ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sheetstation-sailfish-${{ matrix.arch }}
+          path: RPMS/*.rpm
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, windows, android, sailfish]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Collect files
+        run: |
+          mkdir release
+          cp artifacts/sheetstation-linux-x86_64/*.tar.gz release/
+          cp artifacts/sheetstation-android-arm64/*.apk release/
+          (cd artifacts/sheetstation-windows-x64 && zip -qr ../../release/sheetstation-windows-x64.zip .)
+          find artifacts -path "*sailfish*" -name "*.rpm" ! -name "*debug*" -exec cp {} release/ \;
+          ls -la release
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+          body: |
+            **Downloads**
+            - **Windows**: unzip `sheetstation-windows-x64.zip`, run `sheetstation.exe`
+            - **Linux** (x86_64, needs Qt 6 from your distro): `sheetstation-linux-x86_64.tar.gz`
+            - **Android** (arm64): sideload `sheetstation-android-arm64.apk`
+            - **Sailfish OS 5** (aarch64 / armv7hl): install the matching `.rpm`
+
+            First, set up the Google Sheet: see the README.
