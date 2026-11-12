@@ -3,6 +3,7 @@ project(SheetStation VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) # static libs end up in PIE executables (Sailfish) and .so (Android)
 
 option(SHEETSTATION_APP "Build the Qt application" ON)
 option(SHEETSTATION_TESTS "Build the core self-test" OFF)
