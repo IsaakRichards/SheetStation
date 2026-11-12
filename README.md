@@ -1,4 +1,8 @@
-# SheetStation
+<p align="center">
+  <img src="packaging/icons/sheetstation.svg" alt="SheetStation icon" width="128">
+</p>
+
+<h1 align="center">SheetStation</h1>
 
 Share files (e-books and the like) **directly between your devices** over WebRTC, with a
 **Google Sheet as the only server**. The sheet is just a notice board: devices post who
