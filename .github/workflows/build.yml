@@ -171,17 +171,18 @@ jobs:
           set -o pipefail
           docker pull -q coderus/sailfishos-platform-sdk:$SFOS
           chmod -R a+rwX .
-          docker run --rm -v "$PWD:/share" -w /share coderus/sailfishos-platform-sdk:$SFOS bash -c '
+          docker run --rm --privileged -v "$PWD:/share" -w /share coderus/sailfishos-platform-sdk:$SFOS bash -c '
             set -x
             whoami; sdk-assistant list 2>/dev/null || sb2-config -l
             T=$(sb2-config -l | grep -- "-'"$ARCH"'$" | head -1)
             echo "target: $T"
-            mb2 --no-snapshot=force -t "$T" build || mb2 --no-snapshot -t "$T" build
+            mb2 --version || true
+            mb2 -t "$T" build; rc=$?; echo "mb2 exit $rc"; exit $rc
           ' 2>&1 | tee sfos.log
       - name: Report Sailfish errors as annotations
         if: failure()
         run: |
-          grep -v -E "sb2d|^\+ |Unsupported action" sfos.log | grep -v "^\s*$" | tail -9 | while IFS= read -r line; do
+          grep -v -E "^\+ |^\+\+ |SailfishOS-5|─" sfos.log | grep -v "^\s*$" | tail -9 | while IFS= read -r line; do
             echo "::error title=sfos::$(echo "$line" | cut -c1-500)"
           done
       - uses: actions/upload-artifact@v4
