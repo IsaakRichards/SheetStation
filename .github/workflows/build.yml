@@ -119,11 +119,23 @@ jobs:
       - name: Configure
         run: |
           sudo apt-get install -y ninja-build
+          set -o pipefail
           "$QT_ROOT_DIR/bin/qt-cmake" -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" -DANDROID_NDK_ROOT="$ANDROID_NDK_ROOT" \
-            -DQT_HOST_PATH="$QT_HOST_PATH" -DQT_ANDROID_BUILD_ALL_ABIS=OFF
+            -DQT_HOST_PATH="$QT_HOST_PATH" -DQT_ANDROID_BUILD_ALL_ABIS=OFF 2>&1 | tee configure.log
       - name: Build APK
-        run: cmake --build build --target apk
+        run: |
+          set -o pipefail
+          cmake --build build --target apk 2>&1 | tee build.log
+      - name: Report errors as annotations
+        if: failure()
+        run: |
+          for f in configure.log build.log; do
+            [ -f "$f" ] || continue
+            grep -n -i -E "error|not found|could not|fatal" "$f" | head -40 | while IFS= read -r line; do
+              echo "::error title=$f::$(echo "$line" | cut -c1-400)"
+            done
+          done
       - name: Sign APK (throwaway key, for sideloading)
         run: |
           APK=$(find build -name "*release-unsigned.apk" | head -1)

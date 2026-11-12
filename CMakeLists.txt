@@ -9,6 +9,12 @@ option(SHEETSTATION_TESTS "Build the core self-test" OFF)
 option(SHEETSTATION_SAILFISH "Build the Sailfish OS flavour (Silica UI, Qt 5)" OFF)
 option(SHEETSTATION_SYSTEM_LIBDATACHANNEL "Use an installed libdatachannel instead of the submodule" OFF)
 
+# Find Qt early: the Android OpenSSL helper picks OpenSSL 3 vs 1.1 from the Qt version.
+if(SHEETSTATION_APP)
+    find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+endif()
+
 # ---------------------------------------------------------------- libdatachannel
 if(SHEETSTATION_SYSTEM_LIBDATACHANNEL)
     find_package(LibDataChannel REQUIRED)
