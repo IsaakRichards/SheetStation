@@ -77,8 +77,14 @@ Peer::~Peer() {
 
 void Peer::start() {
     rtc::Configuration cfg;
-    for (const auto &s : m_config.iceServers)
-        if (!s.empty()) cfg.iceServers.emplace_back(s);
+    for (const auto &s : m_config.iceServers) {
+        if (s.empty()) continue;
+        try {
+            cfg.iceServers.emplace_back(s);
+        } catch (const std::exception &) {
+            // a mistyped server is skipped rather than killing the connection
+        }
+    }
 
     m_pc = std::make_shared<rtc::PeerConnection>(cfg);
     std::weak_ptr<Peer> weak = shared_from_this();

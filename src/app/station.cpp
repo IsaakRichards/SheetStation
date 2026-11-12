@@ -362,7 +362,10 @@ Station::Link &Station::createLink(const QString &peerId, ss::Peer::Role role) {
     for (QString server : m_stunServers.split(QLatin1Char(','))) {
         server = server.trimmed();
         if (server.isEmpty()) continue;
-        if (!server.contains(QLatin1Char(':'))) server = QStringLiteral("stun:") + server;
+        if (!server.startsWith(QLatin1String("stun:"), Qt::CaseInsensitive) &&
+            !server.startsWith(QLatin1String("turn:"), Qt::CaseInsensitive) &&
+            !server.startsWith(QLatin1String("turns:"), Qt::CaseInsensitive))
+            server = QStringLiteral("stun:") + server;
         cfg.iceServers.push_back(s(server));
     }
     l.peer = ss::Peer::create(s(peerId), role, cfg, cb);
