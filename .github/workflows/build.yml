@@ -176,7 +176,7 @@ jobs:
             whoami; sdk-assistant list 2>/dev/null || sb2-config -l
             T=$(sb2-config -l | grep -- "-'"$ARCH"'$" | head -1)
             echo "target: $T"
-            mb2 -t "$T" build
+            mb2 --no-snapshot=force -t "$T" build || mb2 --no-snapshot -t "$T" build
           ' 2>&1 | tee sfos.log
       - name: Report Sailfish errors as annotations
         if: failure()
