@@ -171,13 +171,13 @@ jobs:
           set -o pipefail
           docker pull -q coderus/sailfishos-platform-sdk:$SFOS
           chmod -R a+rwX .
-          docker run --rm --privileged -v "$PWD:/share" -w /share coderus/sailfishos-platform-sdk:$SFOS bash -c '
+          docker run --rm --privileged -v "$PWD:/home/mersdk/src" -w /home/mersdk/src coderus/sailfishos-platform-sdk:$SFOS bash -c '
             set -x
             whoami; sdk-assistant list 2>/dev/null || sb2-config -l
             T=$(sb2-config -l | grep -- "-'"$ARCH"'$" | head -1)
             echo "target: $T"
             mb2 --version || true
-            mb2 -t "$T" build; rc=$?; echo "mb2 exit $rc"; exit $rc
+            mb2 -t "$T" -s rpm/sheetstation.spec build; rc=$?; echo "mb2 exit $rc"; exit $rc
           ' 2>&1 | tee sfos.log
       - name: Report Sailfish errors as annotations
         if: failure()
