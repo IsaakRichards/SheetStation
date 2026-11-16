@@ -69,6 +69,7 @@ Requires CMake ≥ 3.16 (3.13 for Sailfish), a C++17 compiler and OpenSSL. libda
 | Platform | Qt | Build |
 |---|---|---|
 | Linux | Qt 6 (`qt6-base-dev qt6-declarative-dev` + QML Controls modules) | `cmake -B build -G Ninja && cmake --build build` |
+| Debian / Ubuntu `.deb` | as Linux | `cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build && (cd build && cpack -G DEB)` → `build/sheetstation_<version>_amd64.deb` |
 | Windows | Qt 6 MSVC + OpenSSL 3 | same; `windeployqt --qmldir qml/generic`, copy the OpenSSL DLLs |
 | Android | Qt 6.5+ for Android, NDK r26 | `git clone https://github.com/KDAB/android_openssl third_party/android_openssl`, then `qt-cmake … && cmake --build build --target apk` |
 | Sailfish OS | Qt 5.6 + Silica (Sailfish SDK) | `sfdk build` (uses `rpm/sheetstation.spec`, `-DSHEETSTATION_SAILFISH=ON`) |

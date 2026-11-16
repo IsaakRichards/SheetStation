@@ -42,10 +42,23 @@ jobs:
         run: |
           DESTDIR=$PWD/pkg cmake --install build
           tar -C pkg -czf sheetstation-linux-x86_64.tar.gz .
+      - name: Debian package
+        run: |
+          cd build && cpack -G DEB && cd ..
+          DEB=$(ls build/sheetstation_*.deb)
+          dpkg-deb --info "$DEB"
+          dpkg-deb --contents "$DEB"
+          sudo apt-get install -y "./$DEB"
+          test -x /usr/bin/sheetstation
+          timeout 8s xvfb-run -a /usr/bin/sheetstation || code=$?
+          test "${code:-0}" = "124"
+          cp "$DEB" .
       - uses: actions/upload-artifact@v4
         with:
           name: sheetstation-linux-x86_64
-          path: sheetstation-linux-x86_64.tar.gz
+          path: |
+            sheetstation-linux-x86_64.tar.gz
+            sheetstation_*.deb
 
   windows:
     runs-on: windows-2022
@@ -141,6 +154,13 @@ jobs:
               echo "::error title=$f::$(echo "$line" | cut -c1-400)"
             done
           done
+      - name: Check APK contents (QML modules + OpenSSL bundled)
+        run: |
+          APK=$(find build -name "*release-unsigned.apk" | head -1)
+          unzip -l "$APK" | awk '{print $4}' | grep -E "^lib/" | sort
+          for want in qtquick2plugin qtquickcontrols2plugin qquicklayoutsplugin libssl_3 libcrypto_3; do
+            unzip -l "$APK" | grep -q "$want" || { echo "::error title=apk::$want missing from APK"; exit 1; }
+          done
       - name: Sign APK (throwaway key, for sideloading)
         run: |
           APK=$(find build -name "*release-unsigned.apk" | head -1)
@@ -214,6 +234,7 @@ jobs:
         run: |
           mkdir release
           cp artifacts/sheetstation-linux-x86_64/*.tar.gz release/
+          cp artifacts/sheetstation-linux-x86_64/*.deb release/
           cp artifacts/sheetstation-android-arm64/*.apk release/
           (cd artifacts/sheetstation-windows-x64 && zip -qr ../../release/sheetstation-windows-x64.zip .)
           find artifacts -path "*sailfish*" -name "*.rpm" ! -name "*debug*" -exec cp {} release/ \;
@@ -228,6 +249,7 @@ jobs:
           body: |
             **Downloads**
             - **Windows**: unzip `sheetstation-windows-x64.zip`, run `sheetstation.exe`
+            - **Debian / Ubuntu** (amd64): `sudo apt install ./sheetstation_*_amd64.deb` (pulls in Qt 6 automatically)
             - **Linux** (x86_64, needs Qt 6 from your distro): `sheetstation-linux-x86_64.tar.gz`
             - **Android** (arm64): sideload `sheetstation-android-arm64.apk`
             - **Sailfish OS 5** (aarch64 / armv7hl): install the matching `.rpm`

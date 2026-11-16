@@ -67,3 +67,36 @@ endif()
 if(SHEETSTATION_APP)
     add_subdirectory(src/app)
 endif()
+
+# ---------------------------------------------------------------- Debian package
+# Desktop Linux build: `cmake --build build && cpack --config build/CPackConfig.cmake -G DEB`
+# produces sheetstation_<version>_<arch>.deb. Library dependencies (Qt 6, OpenSSL) are
+# filled in by dpkg-shlibdeps; the QML modules are loaded at runtime, so they are listed
+# by hand.
+if(SHEETSTATION_APP AND UNIX AND NOT ANDROID AND NOT APPLE AND NOT SHEETSTATION_SAILFISH)
+    set(CPACK_PACKAGE_NAME "sheetstation")
+    set(CPACK_PACKAGE_VENDOR "Isaak Richards")
+    set(CPACK_PACKAGE_CONTACT "Isaak Richards")
+    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+        "Share files directly between devices, with a Google Sheet as the only server")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+    set(CPACK_STRIP_FILES ON)
+
+    set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+    set(CPACK_DEBIAN_PACKAGE_SECTION "net")
+    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+    set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/IsaakRichards/SheetStation")
+    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
+"Share files directly between devices, with a Google Sheet as the only server
+ SheetStation shares files (e-books and the like) directly between devices over
+ WebRTC. A Google Sheet, through a small Apps Script web app, is used only to
+ find the other devices and swap connection details.
+ .
+ Not secure: do not use it for sensitive or private files.")
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS
+        "qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtquick-templates, qml6-module-qtqml-workerscript")
+    set(CPACK_GENERATOR "DEB")
+    include(CPack)
+endif()
