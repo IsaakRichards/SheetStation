@@ -37,7 +37,11 @@ int main(int argc, char *argv[]) {
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty(QStringLiteral("station"), &station);
     engine.load(QUrl(QStringLiteral("qrc:/qml/generic/main.qml")));
-    if (engine.rootObjects().isEmpty()) return 1;
+    if (engine.rootObjects().isEmpty()) {
+        // Shows up in `adb logcat` / the terminal instead of a silent exit.
+        qCritical("SheetStation: main.qml failed to load (missing QML modules?)");
+        return 1;
+    }
     return app.exec();
 }
 #endif
