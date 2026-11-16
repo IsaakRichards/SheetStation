@@ -50,7 +50,7 @@ if(ANDROID)
         QT_ANDROID_PACKAGE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/android
         QT_ANDROID_PACKAGE_NAME io.github.isaakrichards.sheetstation
         QT_ANDROID_VERSION_NAME ${PROJECT_VERSION}
-        QT_ANDROID_VERSION_CODE 1
+        QT_ANDROID_VERSION_CODE 2
         # androiddeployqt only bundles the QML modules (QtQuick, Controls, Layouts...) it
         # finds by scanning .qml files under this path. It defaults to this directory
         # (src/app), which has no QML, so nothing was bundled and main.qml failed to load

@@ -1,6 +1,6 @@
 Name:       sheetstation
 Summary:    Share files directly between devices, with a Google Sheet as the only server
-Version:    0.1.0
+Version:    0.1.1
 Release:    1
 License:    TBD
 URL:        https://github.com/IsaakRichards/SheetStation
